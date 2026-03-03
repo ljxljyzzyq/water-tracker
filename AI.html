@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="记录每天的饮水量，保持健康饮水习惯">
+    <title>饮水记录工具</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        
+        /* 容器样式 */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        /* 标题样式 */
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+        
+        h3 {
+            color: #5a6c7d;
+            margin: 25px 0 15px 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        /* 日期部分 */
+        .date-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        #current-date {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        /* 水杯记录部分 */
+        .water-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .water-count {
+            font-size: 56px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        /* 按钮样式 */
+        .buttons {
+            text-align: center;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 按钮颜色 */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            color: white;
+        }
+        
+        .share-button {
+            display: block;
+            margin: 20px auto;
+            width: 200px;
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: #2c3e50;
+        }
+        
+        /* 输入框样式 */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"] {
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            outline: none;
+            background: white;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* 手动输入部分 */
+        .manual-input {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* 其他饮品部分 */
+        .other-drinks {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .drink-input {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .drink-list {
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .drink-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+        
+        .drink-item:hover {
+            background: #f8f9fa;
+            border-radius: 8px;
+            transform: translateX(5px);
+        }
+        
+        .drink-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* 日期查看器 */
+        .date-viewer {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .specific-date-data {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 日期编辑器 */
+        .date-editor {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 历史记录部分 */
+        .history-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .history-item h3 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 18px;
+        }
+        
+        /* 响应式设计 */
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .water-count {
+                font-size: 48px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .drink-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            input[type="text"],
+            input[type="number"],
+            input[type="date"] {
+                width: 100%;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>饮水记录工具</h1>
+        
+        <div class="date-section">
+            <div id="current-date"></div>
+        </div>
+        
+        <button class="share-button" onclick="shareToWechat()">分享到微信</button>
+        
+        <div class="water-section">
+            <h2>水杯记录</h2>
+            <div class="water-count" id="water-count">0</div>
+            <div class="buttons">
+                <button class="btn-primary" onclick="addWater(1)">+1杯</button>
+                <button class="btn-primary" onclick="addWater(2)">+2杯</button>
+                <button class="btn-primary" onclick="addWater(3)">+3杯</button>
+                <button class="btn-secondary" onclick="subtractWater(1)">-1杯</button>
+                <button class="btn-danger" onclick="resetWater()">重置</button>
+            </div>
+            <div class="manual-input">
+                <input type="number" id="manual-water" placeholder="手动输入杯数" min="0" step="0.5">
+                <button class="btn-success" onclick="saveManualWater()">保存</button>
+            </div>
+        </div>
+        
+        <div class="other-drinks">
+            <h2>其他饮品</h2>
+            <div class="drink-input">
+                <input type="text" id="drink-name" placeholder="饮品名称">
+                <input type="number" id="drink-amount" placeholder="杯" min="0" step="0.5">
+                <button class="btn-success" onclick="addOtherDrink()">添加</button>
+            </div>
+            <div class="drink-list" id="drink-list"></div>
+        </div>
+        
+        <div class="date-viewer">
+            <h2>查看特定日期</h2>
+            <div class="date-input">
+                <input type="date" id="view-date">
+                <button class="btn-primary" onclick="viewSpecificDate()">查看</button>
+            </div>
+            <div class="specific-date-data" id="specific-date-data"></div>
+        </div>
+        
+        <div class="date-editor">
+            <h2>修改特定日期</h2>
+            <div class="date-input">
+                <input type="date" id="edit-date">
+                <input type="number" id="edit-water" placeholder="修改杯数" min="0" step="0.5">
+                <button class="btn-secondary" onclick="editSpecificDate()">修改水杯数</button>
+            </div>
+            
+            <h3>修改其他饮品</h3>
+            <div class="drink-input">
+                <input type="date" id="edit-drink-date">
+                <input type="text" id="edit-drink-name" placeholder="饮品名称">
+                <input type="number" id="edit-drink-amount" placeholder="修改杯数" min="0" step="0.5">
+                <button class="btn-secondary" onclick="editSpecificDrink()">修改饮品</button>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <h2>历史记录</h2>
+            <div class="history-list" id="history-list"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取当前日期
+        function getCurrentDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // 检查日期是否在当前月份内
+        function isWithinCurrentMonth(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+        }
+        
+        // 清理过期数据
+        function cleanExpiredData() {
+            let drinkData = JSON.parse(localStorage.getItem('drinkData') || '{}');
+            let cleanedData = {};
+            
+            Object.keys(drinkData).forEach(date => {
+                if (isWithinCurrentMonth(date)) {
+                    cleanedData[date] = drinkData[date];
+                }
+            });
+            
+            localStorage.setItem('drinkData', JSON.stringify(cleanedData));
+            return cleanedData;
+        }
+        
+        // 初始化数据
+        function initData() {
+            const currentDate = getCurrentDate();
+            let drinkData = cleanExpiredData();
+            
+            if (!drinkData[currentDate]) {
+                drinkData[currentDate] = {
+                    water: 0,
+                    otherDrinks: []
+                };
+                localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            }
+            
+            return drinkData;
+        }
+        
+        // 更新日期显示
+        function updateDateDisplay() {
+            const currentDate = getCurrentDate();
+            document.getElementById('current-date').textContent = `今天: ${currentDate}`;
+        }
+        
+        // 更新水杯数显示
+        function updateWaterDisplay() {
+            const currentDate = getCurrentDate();
+            const drinkData = initData();
+            const waterCount = drinkData[currentDate].water;
+            document.getElementById('water-count').textContent = waterCount;
+        }
+        
+        // 更新其他饮品显示
+        function updateOtherDrinksDisplay() {
+            const currentDate = getCurrentDate();
+            const drinkData = initData();
+            const otherDrinks = drinkData[currentDate].otherDrinks;
+            const drinkList = document.getElementById('drink-list');
+            
+            drinkList.innerHTML = '';
+            if (otherDrinks.length === 0) {
+                drinkList.innerHTML = '<p>暂无其他饮品记录</p>';
+                return;
+            }
+            
+            otherDrinks.forEach((drink, index) => {
+                const drinkItem = document.createElement('div');
+                drinkItem.className = 'drink-item';
+                drinkItem.innerHTML = `
+                    <span>${drink.name}: ${drink.amount}杯</span>
+                    <button onclick="removeOtherDrink(${index})" style="background-color: #e74c3c;">删除</button>
+                `;
+                drinkList.appendChild(drinkItem);
+            });
+        }
+        
+        // 更新历史记录显示
+        function updateHistoryDisplay() {
+            const drinkData = initData();
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            // 按日期排序，最新的在前面
+            const sortedDates = Object.keys(drinkData).sort().reverse();
+            
+            sortedDates.forEach(date => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                
+                const waterCount = drinkData[date].water;
+                const otherDrinks = drinkData[date].otherDrinks;
+                
+                let otherDrinksHtml = '';
+                if (otherDrinks.length > 0) {
+                    otherDrinksHtml = '<ul>';
+                    otherDrinks.forEach(drink => {
+                        otherDrinksHtml += `<li>${drink.name}: ${drink.amount}杯</li>`;
+                    });
+                    otherDrinksHtml += '</ul>';
+                } else {
+                    otherDrinksHtml = '<p>无其他饮品记录</p>';
+                }
+                
+                item.innerHTML = `
+                    <h3>${date}</h3>
+                    <p>水杯数: ${waterCount}杯</p>
+                    <p>其他饮品:</p>
+                    ${otherDrinksHtml}
+                `;
+                historyList.appendChild(item);
+            });
+        }
+        
+        // 添加水杯数
+        function addWater(count) {
+            const currentDate = getCurrentDate();
+            let drinkData = initData();
+            drinkData[currentDate].water += count;
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            updateWaterDisplay();
+            updateHistoryDisplay();
+        }
+        
+        // 减少水杯数
+        function subtractWater(count) {
+            const currentDate = getCurrentDate();
+            let drinkData = initData();
+            drinkData[currentDate].water = Math.max(0, drinkData[currentDate].water - count);
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            updateWaterDisplay();
+            updateHistoryDisplay();
+        }
+        
+        // 重置水杯数
+        function resetWater() {
+            const currentDate = getCurrentDate();
+            let drinkData = initData();
+            drinkData[currentDate].water = 0;
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            updateWaterDisplay();
+            updateHistoryDisplay();
+        }
+        
+        // 手动保存杯数
+        function saveManualWater() {
+            const manualWater = parseFloat(document.getElementById('manual-water').value);
+            
+            if (isNaN(manualWater) || manualWater < 0) {
+                alert('请输入有效的杯数');
+                return;
+            }
+            
+            const currentDate = getCurrentDate();
+            let drinkData = initData();
+            drinkData[currentDate].water = manualWater;
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            
+            // 清空输入框
+            document.getElementById('manual-water').value = '';
+            
+            updateWaterDisplay();
+            updateHistoryDisplay();
+        }
+        
+        // 添加其他饮品
+        function addOtherDrink() {
+            const drinkName = document.getElementById('drink-name').value;
+            const drinkAmount = parseInt(document.getElementById('drink-amount').value);
+            
+            if (!drinkName || isNaN(drinkAmount) || drinkAmount <= 0) {
+                alert('请输入有效的饮品名称和数量');
+                return;
+            }
+            
+            const currentDate = getCurrentDate();
+            let drinkData = initData();
+            drinkData[currentDate].otherDrinks.push({
+                name: drinkName,
+                amount: drinkAmount
+            });
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            
+            // 清空输入框
+            document.getElementById('drink-name').value = '';
+            document.getElementById('drink-amount').value = '';
+            
+            updateOtherDrinksDisplay();
+            updateHistoryDisplay();
+        }
+        
+        // 删除其他饮品
+        function removeOtherDrink(index) {
+            const currentDate = getCurrentDate();
+            let drinkData = initData();
+            drinkData[currentDate].otherDrinks.splice(index, 1);
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            updateOtherDrinksDisplay();
+            updateHistoryDisplay();
+        }
+        
+        // 初始化页面
+        function init() {
+            updateDateDisplay();
+            updateWaterDisplay();
+            updateOtherDrinksDisplay();
+            updateHistoryDisplay();
+        }
+        
+        // 查看特定日期的饮水记录
+        function viewSpecificDate() {
+            const viewDate = document.getElementById('view-date').value;
+            
+            if (!viewDate) {
+                document.getElementById('specific-date-data').innerHTML = '<p>请选择日期</p>';
+                return;
+            }
+            
+            let drinkData = JSON.parse(localStorage.getItem('drinkData') || '{}');
+            const dateData = drinkData[viewDate];
+            
+            if (!dateData) {
+                document.getElementById('specific-date-data').innerHTML = `<h3>${viewDate}</h3><p>该日期暂无饮水记录</p>`;
+                return;
+            }
+            
+            const waterCount = dateData.water;
+            const otherDrinks = dateData.otherDrinks;
+            
+            let otherDrinksHtml = '';
+            if (otherDrinks.length > 0) {
+                otherDrinksHtml = '<ul>';
+                otherDrinks.forEach(drink => {
+                    otherDrinksHtml += `<li>${drink.name}: ${drink.amount}杯</li>`;
+                });
+                otherDrinksHtml += '</ul>';
+            } else {
+                otherDrinksHtml = '<p>无其他饮品记录</p>';
+            }
+            
+            document.getElementById('specific-date-data').innerHTML = `
+                <h3>${viewDate}</h3>
+                <p>水杯数: ${waterCount}杯</p>
+                <p>其他饮品:</p>
+                ${otherDrinksHtml}
+            `;
+        }
+        
+        // 分享到微信
+        function shareToWechat() {
+            // 检查是否在微信浏览器中
+            const isWechat = /MicroMessenger/i.test(navigator.userAgent);
+            
+            if (isWechat) {
+                // 在微信中，提示用户使用右上角菜单分享
+                alert('请点击右上角菜单，选择"分享到朋友圈"或"发送给朋友"');
+            } else {
+                // 在普通浏览器中，提示用户复制链接
+                const currentUrl = window.location.href;
+                if (currentUrl.startsWith('file://')) {
+                    alert('请注意：本地文件无法直接在微信中分享。请将文件部署到服务器或使用在线托管服务，然后分享生成的URL。');
+                } else {
+                    navigator.clipboard.writeText(currentUrl).then(function() {
+                        alert('链接已复制到剪贴板，请粘贴到微信中发送给好友');
+                    }).catch(function(err) {
+                        alert('复制失败，请手动复制当前链接');
+                    });
+                }
+            }
+        }
+        
+        // 修改特定日期的饮水记录
+        function editSpecificDate() {
+            const editDate = document.getElementById('edit-date').value;
+            const editWater = parseFloat(document.getElementById('edit-water').value);
+            
+            if (!editDate) {
+                alert('请选择日期');
+                return;
+            }
+            
+            if (isNaN(editWater) || editWater < 0) {
+                alert('请输入有效的杯数');
+                return;
+            }
+            
+            let drinkData = JSON.parse(localStorage.getItem('drinkData') || '{}');
+            
+            if (!drinkData[editDate]) {
+                drinkData[editDate] = {
+                    water: 0,
+                    otherDrinks: []
+                };
+            }
+            
+            drinkData[editDate].water = editWater;
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            
+            // 清空输入框
+            document.getElementById('edit-date').value = '';
+            document.getElementById('edit-water').value = '';
+            
+            // 更新历史记录显示
+            updateHistoryDisplay();
+            
+            alert('修改成功！');
+        }
+        
+        // 修改特定日期的其他饮品
+        function editSpecificDrink() {
+            const editDate = document.getElementById('edit-drink-date').value;
+            const editDrinkName = document.getElementById('edit-drink-name').value;
+            const editDrinkAmount = parseFloat(document.getElementById('edit-drink-amount').value);
+            
+            if (!editDate) {
+                alert('请选择日期');
+                return;
+            }
+            
+            if (!editDrinkName) {
+                alert('请输入饮品名称');
+                return;
+            }
+            
+            if (isNaN(editDrinkAmount) || editDrinkAmount < 0) {
+                alert('请输入有效的杯数');
+                return;
+            }
+            
+            let drinkData = JSON.parse(localStorage.getItem('drinkData') || '{}');
+            
+            if (!drinkData[editDate]) {
+                drinkData[editDate] = {
+                    water: 0,
+                    otherDrinks: []
+                };
+            }
+            
+            // 查找是否存在该饮品
+            const existingDrinkIndex = drinkData[editDate].otherDrinks.findIndex(drink => drink.name === editDrinkName);
+            
+            if (existingDrinkIndex >= 0) {
+                // 更新现有饮品
+                drinkData[editDate].otherDrinks[existingDrinkIndex].amount = editDrinkAmount;
+            } else {
+                // 添加新饮品
+                drinkData[editDate].otherDrinks.push({
+                    name: editDrinkName,
+                    amount: editDrinkAmount
+                });
+            }
+            
+            localStorage.setItem('drinkData', JSON.stringify(drinkData));
+            
+            // 清空输入框
+            document.getElementById('edit-drink-date').value = '';
+            document.getElementById('edit-drink-name').value = '';
+            document.getElementById('edit-drink-amount').value = '';
+            
+            // 更新历史记录显示
+            updateHistoryDisplay();
+            
+            alert('修改成功！');
+        }
+        
+        // 页面加载时初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
